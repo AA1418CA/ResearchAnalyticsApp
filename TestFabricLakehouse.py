@@ -1,42 +1,39 @@
 import pyodbc
+import streamlit as st
+#from azure.identity import AzureCliCredential
+#credential = AzureCliCredential()
 
-# Some other example server values are
+# Load secrets with error handling
+try:
+    researchanalyticsapp = st.secrets["researchanalyticsapp"]
+except KeyError:
+    st.error(f"Error: Could not find secret 'researchanalyticsapp' in Streamlit Cloud.")
+    st.stop()  # Stop execution to prevent errors later
 
-# server = 'localhost\sqlexpress' # for a named instance
 
-# server = 'myserver,port' # to specify an alternate port
+queryStr = 'select * from [dbo].[research_publications]' 
 
-server = '5gioeyiqk2putm2fvq5sqbp74q-ugk5yddp5cde7dwlcg6pyljihy.datawarehouse.fabric.microsoft.com'
+#auth = 'ActiveDirectoryInteractive'
+#auth = 'ActiveDirectoryPassword'
 
-database = 'PA_Lakehouse'
+# Define the SQL Server ODBC connection string
 
-username = 'ankurarora@perceptanalytics.com'
+conn_str = (
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"SERVER={researchanalyticsapp['DATABASE_SERVER']};"
+    f"DATABASE={researchanalyticsapp['DATABASE_NAME']};"
+    f"UID={researchanalyticsapp['AAD_CLIENT_ID']};"
+    f"PWD={researchanalyticsapp['AAD_CLIENT_SECRET']};"
+    f"Authentication=ActiveDirectoryServicePrincipal"
+)
 
-table = 'research_publications'
+# Establish the connection
+conn = pyodbc.connect(conn_str)
 
-auth = 'ActiveDirectoryInteractive'
 
-# ENCRYPT defaults to yes starting in ODBC Driver 18. It's good to always specify ENCRYPT=yes on the client side to avoid MITM attacks.
-
-cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';Authentication='+auth+';UID='+username+';ENCRYPT=yes')
-
-cursor = cnxn.cursor()
-
- 
-
-# Sample select query
-
-cursor.execute("SELECT * FROM "+table)
-
-row = cursor.fetchone()
-
-for row in cursor:
-    print("|".join(map(str, row)))  # Convert each element to string and join with "|"
-
-'''
-while row:
-
-    print(str(row[0])+'|'+str(row[1]))
-
-    row = cursor.fetchone()
-'''
+# Execute a query
+cursor = conn.cursor()
+cursor.execute(queryStr)
+resultList = cursor.fetchall()
+resultColumns = columns = [column[0] for column in cursor.description]
+print(str([dict(zip(columns, row)) for row in resultList]))
