@@ -39,19 +39,8 @@ df = pd.read_sql(queryStr, conn)
 st.title(" Dashboard - Research Anaytics")
 
 # Section 1: Streamlit Built-in Tables
-st.header("1. Streamlit `st.dataframe`")
-st.dataframe(df,use_container_width=True)  # Interactive DataFrame
+st.header("Research Publications - Lookup")
+st.dataframe(df,use_container_width=True,hide_index=True)  # Interactive DataFrame
 
 #st.header("2. Streamlit `st.table`")
 #st.table(df)  # Static Table
-
-
-
-"""
-# Execute a query
-cursor = conn.cursor()
-cursor.execute(queryStr)
-resultList = cursor.fetchall()
-resultColumns = columns = [column[0] for column in cursor.description]
-print(str([dict(zip(columns, row)) for row in resultList]))
-""" 
