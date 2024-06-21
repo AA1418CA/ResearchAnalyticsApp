@@ -1,5 +1,7 @@
 import pyodbc
 import streamlit as st
+import pandas as pd
+
 #from azure.identity import AzureCliCredential
 #credential = AzureCliCredential()
 
@@ -30,10 +32,26 @@ conn_str = (
 # Establish the connection
 conn = pyodbc.connect(conn_str)
 
+# Fetch Data
+df = pd.read_sql(queryStr, conn)
 
+# Streamlit App
+st.title(" Dashboard - Research Anaytics")
+
+# Section 1: Streamlit Built-in Tables
+st.header("1. Streamlit `st.dataframe`")
+st.dataframe(df,use_container_width=True)  # Interactive DataFrame
+
+#st.header("2. Streamlit `st.table`")
+#st.table(df)  # Static Table
+
+
+
+"""
 # Execute a query
 cursor = conn.cursor()
 cursor.execute(queryStr)
 resultList = cursor.fetchall()
 resultColumns = columns = [column[0] for column in cursor.description]
 print(str([dict(zip(columns, row)) for row in resultList]))
+""" 
